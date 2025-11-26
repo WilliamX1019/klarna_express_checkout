@@ -1,0 +1,133 @@
+import Flutter
+import UIKit
+import KlarnaMobileSDK
+
+public class KlarnaExpressCheckoutPlugin: NSObject, FlutterPlugin {
+    private var channel: FlutterMethodChannel?
+    private var eventChannel: FlutterEventChannel?
+    private var eventSink: FlutterEventSink?
+
+    public static func register(with registrar: FlutterPluginRegistrar) {
+        let channel = FlutterMethodChannel(
+            name: "klarna_express_checkout",
+            binaryMessenger: registrar.messenger()
+        )
+
+        let eventChannel = FlutterEventChannel(
+            name: "klarna_express_checkout/events",
+            binaryMessenger: registrar.messenger()
+        )
+
+        let instance = KlarnaExpressCheckoutPlugin()
+        instance.channel = channel
+        instance.eventChannel = eventChannel
+
+        registrar.addMethodCallDelegate(instance, channel: channel)
+        eventChannel.setStreamHandler(instance)
+
+        // Register platform view factory
+        registrar.register(
+            KlarnaExpressCheckoutButtonFactory(messenger: registrar.messenger(), plugin: instance),
+            withId: "klarna_express_checkout_button"
+        )
+    }
+
+    public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        switch call.method {
+        case "initialize":
+            handleInitialize(call, result: result)
+        case "loadButton":
+            handleLoadButton(call, result: result)
+        case "updateSession":
+            handleUpdateSession(call, result: result)
+        case "finalizeSession":
+            handleFinalizeSession(call, result: result)
+        case "setLoggingLevel":
+            handleSetLoggingLevel(call, result: result)
+        default:
+            result(FlutterMethodNotImplemented)
+        }
+    }
+
+    private func handleInitialize(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        guard let args = call.arguments as? [String: Any] else {
+            result(FlutterError(
+                code: "INVALID_ARGUMENTS",
+                message: "Invalid arguments for initialize",
+                details: nil
+            ))
+            return
+        }
+
+        // Extract configuration
+        let environment = args["environment"] as? String ?? "production"
+
+        // Set up Klarna environment if needed
+        // (SDK initialization is typically done per-button)
+
+        result(nil)
+    }
+
+    private func handleLoadButton(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        // Button loading is handled by the platform view
+        result(nil)
+    }
+
+    private func handleUpdateSession(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        guard let args = call.arguments as? [String: Any] else {
+            result(FlutterError(
+                code: "INVALID_ARGUMENTS",
+                message: "Invalid arguments for updateSession",
+                details: nil
+            ))
+            return
+        }
+
+        // This would update an existing button's session
+        // Implementation depends on keeping a reference to the button
+        result(nil)
+    }
+
+    private func handleFinalizeSession(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        // Finalize session manually
+        result(nil)
+    }
+
+    private func handleSetLoggingLevel(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        guard let args = call.arguments as? [String: Any],
+              let level = args["level"] as? String else {
+            result(FlutterError(
+                code: "INVALID_ARGUMENTS",
+                message: "Invalid arguments for setLoggingLevel",
+                details: nil
+            ))
+            return
+        }
+
+        // Set logging level based on the value
+        // KlarnaMobileSDK may have logging configuration
+
+        result(nil)
+    }
+
+    func sendEvent(type: String, data: [String: Any]) {
+        guard let eventSink = eventSink else { return }
+        eventSink([
+            "type": type,
+            "data": data
+        ])
+    }
+}
+
+// MARK: - FlutterStreamHandler
+extension KlarnaExpressCheckoutPlugin: FlutterStreamHandler {
+    public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+        self.eventSink = events
+        return nil
+    }
+
+    public func onCancel(withArguments arguments: Any?) -> FlutterError? {
+        self.eventSink = nil
+        return nil
+    }
+}
