@@ -94,6 +94,10 @@ vm_service
 3.3
 file:///Users/yunlong/.pub-cache/hosted/pub.dev/vm_service-14.2.4/
 file:///Users/yunlong/.pub-cache/hosted/pub.dev/vm_service-14.2.4/lib/
+klarna_express_checkout
+3.0
+file:///Users/yunlong/Desktop/github/klarna_express_checkout/
+file:///Users/yunlong/Desktop/github/klarna_express_checkout/lib/
 sky_engine
 3.2
 file:///Users/yunlong/development/flutter/bin/cache/pkg/sky_engine/
@@ -106,8 +110,4 @@ flutter_test
 3.3
 file:///Users/yunlong/development/flutter/packages/flutter_test/
 file:///Users/yunlong/development/flutter/packages/flutter_test/lib/
-klarna_express_checkout
-3.0
-file:///Users/yunlong/klarna_express_checkout/
-file:///Users/yunlong/klarna_express_checkout/lib/
 2

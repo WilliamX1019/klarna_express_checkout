@@ -48,5 +48,6 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'com.klarna.mobile:sdk:2.10.0'
+    implementation 'com.klarna.mobile.sdk:klarna-payments:2.10.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 }

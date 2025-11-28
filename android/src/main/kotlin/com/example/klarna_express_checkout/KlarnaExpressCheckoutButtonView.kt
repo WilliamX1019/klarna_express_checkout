@@ -3,16 +3,20 @@ package com.example.klarna_express_checkout
 import android.content.Context
 import android.view.View
 import android.widget.FrameLayout
-import com.klarna.mobile.sdk.api.expressbutton.KlarnaExpressCheckoutButton
-import com.klarna.mobile.sdk.api.expressbutton.KlarnaExpressCheckoutButtonAuthorizationResponse
-import com.klarna.mobile.sdk.api.expressbutton.KlarnaExpressCheckoutButtonCallback
-import com.klarna.mobile.sdk.api.expressbutton.KlarnaExpressCheckoutButtonOptions
-import com.klarna.mobile.sdk.api.expressbutton.KlarnaExpressCheckoutButtonStyleConfiguration
-import com.klarna.mobile.sdk.api.expressbutton.KlarnaExpressCheckoutError
-import com.klarna.mobile.sdk.api.expressbutton.KlarnaExpressCheckoutSessionOptions
-import com.klarna.mobile.sdk.KlarnaEnvironment
-import com.klarna.mobile.sdk.KlarnaLoggingLevel
-import com.klarna.mobile.sdk.KlarnaRegion
+import com.klarna.mobile.sdk.api.expresscheckout.KlarnaExpressCheckoutButton
+import com.klarna.mobile.sdk.api.expresscheckout.KlarnaExpressCheckoutButtonAuthorizationResponse
+import com.klarna.mobile.sdk.api.expresscheckout.KlarnaExpressCheckoutButtonCallback
+import com.klarna.mobile.sdk.api.expresscheckout.KlarnaExpressCheckoutButtonOptions
+import com.klarna.mobile.sdk.api.expresscheckout.KlarnaExpressCheckoutButtonStyleConfiguration
+import com.klarna.mobile.sdk.api.expresscheckout.KlarnaExpressCheckoutError
+import com.klarna.mobile.sdk.api.expresscheckout.KlarnaExpressCheckoutSessionOptions
+import com.klarna.mobile.sdk.api.button.KlarnaButtonTheme
+import com.klarna.mobile.sdk.api.button.KlarnaButtonShape
+import com.klarna.mobile.sdk.api.button.KlarnaButtonStyle
+import com.klarna.mobile.sdk.api.KlarnaEnvironment
+import com.klarna.mobile.sdk.api.KlarnaLoggingLevel
+import com.klarna.mobile.sdk.api.KlarnaRegion
+import com.klarna.mobile.sdk.api.KlarnaTheme
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.StandardMessageCodec
 import io.flutter.plugin.platform.PlatformView
@@ -75,9 +79,7 @@ class KlarnaExpressCheckoutButtonView(
                     }
                     KlarnaExpressCheckoutSessionOptions.ServerSideSession(
                         clientToken = clientToken,
-                        autoFinalize = true,
-                        collectShippingAddress = config["collectShippingAddress"] as? Boolean ?: false,
-                        sessionData = null
+                        autoFinalize = true
                     )
                 }
                 else -> {
@@ -98,7 +100,7 @@ class KlarnaExpressCheckoutButtonView(
 
                     // Convert to JSON string if needed
                     val sessionData = if (sessionDataMap.isNotEmpty()) {
-                        org.json.JSONObject(sessionDataMap).toString()
+                        org.json.JSONObject(sessionDataMap as Map<*, *>).toString()
                     } else {
                         ""
                     }
@@ -118,6 +120,13 @@ class KlarnaExpressCheckoutButtonView(
                 else -> KlarnaEnvironment.PRODUCTION
             }
 
+            // Parse theme (KlarnaTheme for button options)
+            val theme = when (themeString.lowercase()) {
+                "light" -> KlarnaTheme.LIGHT
+                "auto", "automatic" -> KlarnaTheme.AUTOMATIC
+                else -> KlarnaTheme.DARK
+            }
+
             // Parse region
             val region = when (regionString.lowercase()) {
                 "eu", "europe" -> KlarnaRegion.EU
@@ -128,36 +137,33 @@ class KlarnaExpressCheckoutButtonView(
 
             // Parse logging level
             val loggingLevel = when (loggingLevelString.lowercase()) {
-                "verbose", "debug" -> KlarnaLoggingLevel.VERBOSE
-                "error" -> KlarnaLoggingLevel.ERROR
-                "off", "none" -> KlarnaLoggingLevel.OFF
-                else -> KlarnaLoggingLevel.OFF
+                "verbose", "debug" -> KlarnaLoggingLevel.Verbose
+                "error" -> KlarnaLoggingLevel.Error
+                "off", "none" -> KlarnaLoggingLevel.Off
+                else -> KlarnaLoggingLevel.Off
             }
 
             // Parse style configuration
-            val styleConfig = config["styleConfiguration"] as? Map<String, Any>
-            val styleConfiguration = if (styleConfig != null) {
-                KlarnaExpressCheckoutButtonStyleConfiguration(
-                    theme = parseTheme(themeString),
-                    shape = parseShape(styleConfig["shape"] as? String),
-                    style = parseStyle(styleConfig["style"] as? String)
-                )
-            } else {
-                KlarnaExpressCheckoutButtonStyleConfiguration(
-                    theme = parseTheme(themeString),
-                    shape = null,
-                    style = null
-                )
-            }
+            // Note: Flutter sends these as top-level config values
+            val shapeString = config["shape"] as? String
+            val styleString = config["buttonStyle"] as? String // Note: Flutter sends "buttonStyle"
+
+            val styleConfiguration = KlarnaExpressCheckoutButtonStyleConfiguration(
+                theme = parseTheme(themeString),
+                shape = parseShape(shapeString),
+                style = parseStyle(styleString)
+            )
 
             // Create button options
             val options = KlarnaExpressCheckoutButtonOptions(
                 sessionOptions = sessionOptions,
                 callback = this,
                 locale = locale,
+                styleConfiguration = styleConfiguration,
                 environment = environment,
                 region = region,
-                styleConfiguration = styleConfiguration,
+                theme = theme,
+                resourceEndpoint = null,
                 loggingLevel = loggingLevel
             )
 
@@ -176,26 +182,26 @@ class KlarnaExpressCheckoutButtonView(
         }
     }
 
-    private fun parseTheme(theme: String?): KlarnaExpressCheckoutButtonStyleConfiguration.KlarnaButtonTheme {
+    private fun parseTheme(theme: String?): KlarnaButtonTheme {
         return when (theme?.lowercase()) {
-            "light" -> KlarnaExpressCheckoutButtonStyleConfiguration.KlarnaButtonTheme.LIGHT
-            "auto" -> KlarnaExpressCheckoutButtonStyleConfiguration.KlarnaButtonTheme.AUTO
-            else -> KlarnaExpressCheckoutButtonStyleConfiguration.KlarnaButtonTheme.DARK
+            "light" -> KlarnaButtonTheme.LIGHT
+            "auto" -> KlarnaButtonTheme.AUTO
+            else -> KlarnaButtonTheme.DARK
         }
     }
 
-    private fun parseShape(shape: String?): KlarnaExpressCheckoutButtonStyleConfiguration.KlarnaButtonShape {
+    private fun parseShape(shape: String?): KlarnaButtonShape {
         return when (shape?.lowercase()) {
-            "rectangle" -> KlarnaExpressCheckoutButtonStyleConfiguration.KlarnaButtonShape.RECTANGLE
-            "pill" -> KlarnaExpressCheckoutButtonStyleConfiguration.KlarnaButtonShape.PILL
-            else -> KlarnaExpressCheckoutButtonStyleConfiguration.KlarnaButtonShape.ROUNDED_RECT
+            "rectangle" -> KlarnaButtonShape.RECTANGLE
+            "pill" -> KlarnaButtonShape.PILL
+            else -> KlarnaButtonShape.ROUNDED_RECT
         }
     }
 
-    private fun parseStyle(style: String?): KlarnaExpressCheckoutButtonStyleConfiguration.KlarnaButtonStyle {
+    private fun parseStyle(style: String?): KlarnaButtonStyle {
         return when (style?.lowercase()) {
-            "outlined" -> KlarnaExpressCheckoutButtonStyleConfiguration.KlarnaButtonStyle.OUTLINED
-            else -> KlarnaExpressCheckoutButtonStyleConfiguration.KlarnaButtonStyle.FILLED
+            "outlined" -> KlarnaButtonStyle.OUTLINED
+            else -> KlarnaButtonStyle.FILLED
         }
     }
 

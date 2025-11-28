@@ -170,7 +170,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Product info
-            Card(
+            const Card(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
