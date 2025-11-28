@@ -224,7 +224,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     currency: 'USD',
                   ),
                   buttonConfig: const KlarnaButtonConfig(
-                    theme: KlarnaTheme.light,
+                    theme: KlarnaTheme.dark,
                     shape: KlarnaButtonShape.roundedRect,
                     style: KlarnaButtonStyle.filled,
                   ),

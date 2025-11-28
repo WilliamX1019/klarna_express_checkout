@@ -35,6 +35,7 @@ class KlarnaExpressCheckoutButtonView: NSObject, FlutterPlatformView {
     private var _view: UIView
     private var button: KlarnaExpressCheckoutButton?
     private weak var plugin: KlarnaExpressCheckoutPlugin?
+    private let viewId: Int64
 
     init(
         frame: CGRect,
@@ -45,6 +46,7 @@ class KlarnaExpressCheckoutButtonView: NSObject, FlutterPlatformView {
     ) {
         _view = UIView(frame: frame)
         self.plugin = plugin
+        self.viewId = viewId
         super.init()
 
         guard let args = args as? [String: Any] else {
@@ -52,10 +54,18 @@ class KlarnaExpressCheckoutButtonView: NSObject, FlutterPlatformView {
         }
 
         setupButton(with: args)
+
+        // Register this view with the plugin
+        plugin?.registerButtonView(self, viewId: viewId)
     }
 
     func view() -> UIView {
         return _view
+    }
+
+    deinit {
+        // Unregister when the view is deallocated
+        plugin?.unregisterButtonView(viewId: viewId)
     }
 
     private func setupButton(with config: [String: Any]) {
@@ -64,6 +74,9 @@ class KlarnaExpressCheckoutButtonView: NSObject, FlutterPlatformView {
         let locale = config["locale"] as? String ?? "en-US"
         let returnUrlString = config["returnUrl"] as? String ?? ""
         let environmentString = config["environment"] as? String ?? "production"
+        let themeString = config["theme"] as? String ?? "dark"
+        let regionString = config["region"] as? String ?? "na"
+        let loggingLevelString = config["loggingLevel"] as? String ?? "off"
 
         // Parse session options
         let sessionOptions: KlarnaExpressCheckoutSessionOptions
@@ -77,9 +90,7 @@ class KlarnaExpressCheckoutButtonView: NSObject, FlutterPlatformView {
 
             sessionOptions = KlarnaExpressCheckoutSessionOptions.ServerSideSession(
                 clientToken: clientToken,
-                autoFinalize: true,
-                collectShippingAddress: false,
-                sessionData: nil
+                autoFinalize: true
             )
         } else {
             // Client-side session
@@ -122,18 +133,108 @@ class KlarnaExpressCheckoutButtonView: NSObject, FlutterPlatformView {
             environment = .production
         }
 
+        // Parse theme (for button options - KlarnaTheme)
+        let theme: KlarnaTheme
+        switch themeString.lowercased() {
+        case "light":
+            theme = .light
+        case "auto", "automatic":
+            theme = .automatic
+        default:
+            theme = .dark
+        }
+
+        // Parse region
+        let region: KlarnaRegion
+        switch regionString.lowercased() {
+        case "eu", "europe":
+            region = .eu
+        case "oc", "oceania":
+            region = .oc
+        case "na", "north_america", "northamerica":
+            region = .na
+        default:
+            region = .na // Default to North America
+        }
+
+        // Parse logging level
+        let loggingLevel: KlarnaLoggingLevel
+        switch loggingLevelString.lowercased() {
+        case "verbose", "debug":
+            loggingLevel = .verbose
+        case "error":
+            loggingLevel = .error
+        case "off", "none":
+            loggingLevel = .off
+        default:
+            loggingLevel = .off
+        }
+
+        // Parse style configuration
+        // Note: Flutter sends these as top-level config values, not nested in styleConfiguration
+        var buttonTheme: KlarnaButtonTheme? = nil
+        var buttonShape: KlarnaButtonShape? = nil
+        var buttonStyle: KlarnaButtonStyle? = nil
+
+        // Parse button theme (KlarnaButtonTheme for style configuration)
+        // This is different from the overall theme (KlarnaTheme) used above
+        // We use the same 'theme' value for consistency
+        switch themeString.lowercased() {
+        case "light":
+            buttonTheme = .light
+        case "dark":
+            buttonTheme = .dark
+        case "auto", "automatic":
+            buttonTheme = .auto
+        default:
+            buttonTheme = nil
+        }
+
+        // Parse button shape
+        if let shapeStr = config["shape"] as? String {
+            switch shapeStr.lowercased() {
+            case "pill":
+                buttonShape = .pill
+            case "rectangle":
+                buttonShape = .rectangle
+            case "roundedrect", "rounded_rect", "rounded":
+                buttonShape = .roundedRect
+            default:
+                buttonShape = nil
+            }
+        }
+
+        // Parse button style (note: Flutter sends as "buttonStyle" not "style")
+        if let styleStr = config["buttonStyle"] as? String {
+            switch styleStr.lowercased() {
+            case "outlined", "outline":
+                buttonStyle = .outlined
+            case "filled", "fill":
+                buttonStyle = .filled
+            default:
+                buttonStyle = nil
+            }
+        }
+
+        // Create style configuration with parsed values
+        let styleConfiguration = KlarnaExpressCheckoutButtonStyleConfiguration(
+            theme: buttonTheme,
+            shape: buttonShape,
+            style: buttonStyle
+        )
+
         // Build button options
         let options = KlarnaExpressCheckoutButtonOptions(
             sessionOptions: sessionOptions,
             returnUrl: returnUrlString,
             delegate: self,
             locale: locale,
-            styleConfiguration: nil, // Will use defaults or set separately if needed
-            theme: .dark,
+            styleConfiguration: styleConfiguration,
+            theme: theme,
             environment: environment,
-            region: .na,
+            region: region,
             resourceEndpoint: nil,
-            loggingLevel: .off
+            loggingLevel: loggingLevel
         )
 
         // Create button
@@ -201,18 +302,88 @@ extension KlarnaExpressCheckoutButtonView: KlarnaExpressCheckoutButtonDelegate {
 
     private func mapErrorCode(_ error: KlarnaError) -> String {
         // Map Klarna SDK error to our error codes
-        let errorName = error.name
+        let errorName = error.name.lowercased()
 
-        if errorName.contains("AuthorizationFailed") {
+        // Authorization errors
+        if errorName.contains("authorizationfailed") || errorName.contains("authorization_failed") {
             return "authorizationFailed"
-        } else if errorName.contains("Network") {
+        }
+
+        // Network errors
+        if errorName.contains("network") || errorName.contains("connection") {
             return "networkError"
-        } else if errorName.contains("InvalidConfiguration") {
+        }
+
+        // Configuration errors
+        if errorName.contains("invalidconfiguration") || errorName.contains("invalid_configuration") {
             return "invalidConfiguration"
-        } else if errorName.contains("Cancelled") {
+        }
+
+        // User cancellation
+        if errorName.contains("cancelled") || errorName.contains("canceled") {
             return "cancelled"
         }
 
+        // Session errors
+        if errorName.contains("session") {
+            if errorName.contains("expired") {
+                return "sessionExpired"
+            } else if errorName.contains("invalid") {
+                return "invalidSession"
+            }
+            return "sessionError"
+        }
+
+        // Token errors
+        if errorName.contains("token") {
+            if errorName.contains("expired") {
+                return "tokenExpired"
+            } else if errorName.contains("invalid") {
+                return "invalidToken"
+            }
+            return "tokenError"
+        }
+
+        // Timeout errors
+        if errorName.contains("timeout") || errorName.contains("timed out") {
+            return "timeout"
+        }
+
+        // Server errors
+        if errorName.contains("server") || errorName.contains("5xx") {
+            return "serverError"
+        }
+
+        // Client errors
+        if errorName.contains("client") || errorName.contains("4xx") {
+            return "clientError"
+        }
+
+        // Payment method errors
+        if errorName.contains("payment") {
+            return "paymentError"
+        }
+
         return "unknown"
+    }
+
+    // MARK: - Public Methods for Plugin
+
+    func updateSession(clientToken: String) {
+        // Note: KlarnaExpressCheckoutButton doesn't support updating session after creation
+        // You would need to recreate the button with new options
+        sendError(message: "Session update not supported for Express Checkout button. Please recreate the button.", isFatal: false)
+    }
+
+    func finalizeSession() {
+        // Express Checkout button handles finalization automatically via autoFinalize option
+        // This method is kept for API compatibility
+        sendError(message: "Manual finalization not needed for Express Checkout with autoFinalize enabled", isFatal: false)
+    }
+
+    func setLoggingLevel(_ level: String) {
+        // Note: Logging level is set during button initialization
+        // It cannot be changed after the button is created
+        sendError(message: "Logging level can only be set during button initialization", isFatal: false)
     }
 }

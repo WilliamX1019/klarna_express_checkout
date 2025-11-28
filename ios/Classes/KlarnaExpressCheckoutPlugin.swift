@@ -6,6 +6,7 @@ public class KlarnaExpressCheckoutPlugin: NSObject, FlutterPlugin {
     private var channel: FlutterMethodChannel?
     private var eventChannel: FlutterEventChannel?
     private var eventSink: FlutterEventSink?
+    private var buttonViews: [Int64: KlarnaExpressCheckoutButtonView] = [:]
 
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(
@@ -83,13 +84,50 @@ public class KlarnaExpressCheckoutPlugin: NSObject, FlutterPlugin {
             return
         }
 
-        // This would update an existing button's session
-        // Implementation depends on keeping a reference to the button
+        guard let viewId = args["viewId"] as? Int64,
+              let clientToken = args["clientToken"] as? String else {
+            result(FlutterError(
+                code: "INVALID_ARGUMENTS",
+                message: "Missing viewId or clientToken for updateSession",
+                details: nil
+            ))
+            return
+        }
+
+        guard let buttonView = buttonViews[viewId] else {
+            result(FlutterError(
+                code: "VIEW_NOT_FOUND",
+                message: "Button view with id \(viewId) not found",
+                details: nil
+            ))
+            return
+        }
+
+        buttonView.updateSession(clientToken: clientToken)
         result(nil)
     }
 
     private func handleFinalizeSession(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        // Finalize session manually
+        guard let args = call.arguments as? [String: Any],
+              let viewId = args["viewId"] as? Int64 else {
+            result(FlutterError(
+                code: "INVALID_ARGUMENTS",
+                message: "Missing viewId for finalizeSession",
+                details: nil
+            ))
+            return
+        }
+
+        guard let buttonView = buttonViews[viewId] else {
+            result(FlutterError(
+                code: "VIEW_NOT_FOUND",
+                message: "Button view with id \(viewId) not found",
+                details: nil
+            ))
+            return
+        }
+
+        buttonView.finalizeSession()
         result(nil)
     }
 
@@ -104,9 +142,25 @@ public class KlarnaExpressCheckoutPlugin: NSObject, FlutterPlugin {
             return
         }
 
-        // Set logging level based on the value
-        // KlarnaMobileSDK may have logging configuration
+        guard let viewId = args["viewId"] as? Int64 else {
+            result(FlutterError(
+                code: "INVALID_ARGUMENTS",
+                message: "Missing viewId for setLoggingLevel",
+                details: nil
+            ))
+            return
+        }
 
+        guard let buttonView = buttonViews[viewId] else {
+            result(FlutterError(
+                code: "VIEW_NOT_FOUND",
+                message: "Button view with id \(viewId) not found",
+                details: nil
+            ))
+            return
+        }
+
+        buttonView.setLoggingLevel(level)
         result(nil)
     }
 
@@ -116,6 +170,14 @@ public class KlarnaExpressCheckoutPlugin: NSObject, FlutterPlugin {
             "type": type,
             "data": data
         ])
+    }
+
+    func registerButtonView(_ view: KlarnaExpressCheckoutButtonView, viewId: Int64) {
+        buttonViews[viewId] = view
+    }
+
+    func unregisterButtonView(viewId: Int64) {
+        buttonViews.removeValue(forKey: viewId)
     }
 }
 

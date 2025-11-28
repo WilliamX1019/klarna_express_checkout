@@ -2,10 +2,10 @@ PODS:
   - Flutter (1.0.0)
   - klarna_express_checkout (0.1.0):
     - Flutter
-    - KlarnaMobileSDK (~> 2.8.1)
-  - KlarnaMobileSDK (2.8.1):
-    - KlarnaMobileSDK/basic (= 2.8.1)
-  - KlarnaMobileSDK/basic (2.8.1)
+    - KlarnaMobileSDK (~> 2.10.0)
+  - KlarnaMobileSDK (2.10.1):
+    - KlarnaMobileSDK/basic (= 2.10.1)
+  - KlarnaMobileSDK/basic (2.10.1)
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
@@ -23,8 +23,8 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  klarna_express_checkout: ed88317c98d5e30c785a5aebde736f1030907c28
-  KlarnaMobileSDK: 5c3d064082e683353fc76a9fcd771ceea30f0f35
+  klarna_express_checkout: cca4bbc0f8daa6cc5fadf0daf8ecb17025bdcc9f
+  KlarnaMobileSDK: 4d1acf86e14fe374a7341280ee5ca975538ac34d
 
 PODFILE CHECKSUM: a57f30d18f102dd3ce366b1d62a55ecbef2158e5
 

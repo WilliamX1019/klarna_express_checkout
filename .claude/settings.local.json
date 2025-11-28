@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:docs.klarna.com)",
+      "WebSearch",
+      "Bash(pod spec cat:*)",
+      "Bash(xcodebuild:*)",
+      "Bash(flutter build:*)",
+      "Bash(pod install)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

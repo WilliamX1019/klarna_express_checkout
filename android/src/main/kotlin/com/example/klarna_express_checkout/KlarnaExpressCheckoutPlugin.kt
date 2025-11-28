@@ -15,6 +15,7 @@ class KlarnaExpressCheckoutPlugin : FlutterPlugin, MethodCallHandler {
     private lateinit var eventChannel: EventChannel
     private var eventSink: EventChannel.EventSink? = null
     private lateinit var context: Context
+    private val buttonViews = mutableMapOf<Int, KlarnaExpressCheckoutButtonView>()
 
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         context = flutterPluginBinding.applicationContext
@@ -75,7 +76,21 @@ class KlarnaExpressCheckoutPlugin : FlutterPlugin, MethodCallHandler {
     private fun handleUpdateSession(call: MethodCall, result: Result) {
         try {
             val args = call.arguments as? Map<String, Any>
-            // Update session logic here
+            val viewId = args?.get("viewId") as? Int
+            val clientToken = args?.get("clientToken") as? String
+
+            if (viewId == null || clientToken == null) {
+                result.error("INVALID_ARGUMENTS", "Missing viewId or clientToken", null)
+                return
+            }
+
+            val buttonView = buttonViews[viewId]
+            if (buttonView == null) {
+                result.error("VIEW_NOT_FOUND", "Button view with id $viewId not found", null)
+                return
+            }
+
+            buttonView.updateSession(clientToken)
             result.success(null)
         } catch (e: Exception) {
             result.error("UPDATE_SESSION_ERROR", e.message, null)
@@ -84,7 +99,21 @@ class KlarnaExpressCheckoutPlugin : FlutterPlugin, MethodCallHandler {
 
     private fun handleFinalizeSession(call: MethodCall, result: Result) {
         try {
-            // Finalize session logic here
+            val args = call.arguments as? Map<String, Any>
+            val viewId = args?.get("viewId") as? Int
+
+            if (viewId == null) {
+                result.error("INVALID_ARGUMENTS", "Missing viewId", null)
+                return
+            }
+
+            val buttonView = buttonViews[viewId]
+            if (buttonView == null) {
+                result.error("VIEW_NOT_FOUND", "Button view with id $viewId not found", null)
+                return
+            }
+
+            buttonView.finalizeSession()
             result.success(null)
         } catch (e: Exception) {
             result.error("FINALIZE_ERROR", e.message, null)
@@ -94,8 +123,21 @@ class KlarnaExpressCheckoutPlugin : FlutterPlugin, MethodCallHandler {
     private fun handleSetLoggingLevel(call: MethodCall, result: Result) {
         try {
             val args = call.arguments as? Map<String, Any>
+            val viewId = args?.get("viewId") as? Int
             val level = args?.get("level") as? String
-            // Set logging level
+
+            if (viewId == null || level == null) {
+                result.error("INVALID_ARGUMENTS", "Missing viewId or level", null)
+                return
+            }
+
+            val buttonView = buttonViews[viewId]
+            if (buttonView == null) {
+                result.error("VIEW_NOT_FOUND", "Button view with id $viewId not found", null)
+                return
+            }
+
+            buttonView.setLoggingLevel(level)
             result.success(null)
         } catch (e: Exception) {
             result.error("LOGGING_ERROR", e.message, null)
@@ -104,6 +146,14 @@ class KlarnaExpressCheckoutPlugin : FlutterPlugin, MethodCallHandler {
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
+    }
+
+    fun registerButtonView(view: KlarnaExpressCheckoutButtonView, viewId: Int) {
+        buttonViews[viewId] = view
+    }
+
+    fun unregisterButtonView(viewId: Int) {
+        buttonViews.remove(viewId)
     }
 
     fun sendEvent(type: String, data: Map<String, Any>) {
