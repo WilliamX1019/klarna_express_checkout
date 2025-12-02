@@ -77,6 +77,9 @@ class KlarnaExpressCheckoutButtonView: NSObject, FlutterPlatformView {
         let themeString = config["theme"] as? String ?? "dark"
         let regionString = config["region"] as? String ?? "na"
         let loggingLevelString = config["loggingLevel"] as? String ?? "off"
+        let sessionData:String = config["sessionData"] as? String ?? ""
+
+
 
         // Parse session options
         let sessionOptions: KlarnaExpressCheckoutSessionOptions
@@ -100,25 +103,25 @@ class KlarnaExpressCheckoutButtonView: NSObject, FlutterPlatformView {
             }
 
             // Build session data dictionary
-            var sessionData: [String: Any] = [:]
-            if let amount = config["amount"] as? Double {
-                sessionData["purchase_amount"] = Int(amount * 100) // Convert to minor units
-            }
-            if let currency = config["currency"] as? String {
-                sessionData["purchase_currency"] = currency
-            }
+            // var sessionData: [String: Any] = [:]
+            // if let amount = config["amount"] as? Double {
+            //     sessionData["purchase_amount"] = Int(amount * 100) // Convert to minor units
+            // }
+            // if let currency = config["currency"] as? String {
+            //     sessionData["purchase_currency"] = currency
+            // }
 
-            // Convert session data to JSON string if needed
-            var sessionDataString: String? = nil
-            if !sessionData.isEmpty,
-               let jsonData = try? JSONSerialization.data(withJSONObject: sessionData),
-               let jsonString = String(data: jsonData, encoding: .utf8) {
-                sessionDataString = jsonString
-            }
+            // // Convert session data to JSON string if needed
+            // var sessionDataString: String? = nil
+            // if !sessionData.isEmpty,
+            //    let jsonData = try? JSONSerialization.data(withJSONObject: sessionData),
+            //    let jsonString = String(data: jsonData, encoding: .utf8) {
+            //     sessionDataString = jsonString
+            // }
 
             sessionOptions = KlarnaExpressCheckoutSessionOptions.ClientSideSession(
                 clientId: clientId,
-                sessionData: sessionDataString ?? "",
+                sessionData: sessionData,
                 autoFinalize: true,
                 collectShippingAddress: config["collectShippingAddress"] as? Bool ?? false
             )

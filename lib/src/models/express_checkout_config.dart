@@ -9,20 +9,15 @@ abstract class KlarnaSessionConfig {
 class KlarnaClientSideSession extends KlarnaSessionConfig {
   final String clientId;
   final String locale;
-  final double amount;
-  final String currency;
-  final String? email;
-  final String? phoneNumber;
-  final Map<String, dynamic>? shippingAddress;
-
+  final String sessionData;
+  final String region;
+  final bool? collectShippingAddress;
   KlarnaClientSideSession({
     required this.clientId,
     required this.locale,
-    required this.amount,
-    required this.currency,
-    this.email,
-    this.phoneNumber,
-    this.shippingAddress,
+    required this.sessionData,
+    required this.region,
+    this.collectShippingAddress,
   });
 
   @override
@@ -31,11 +26,9 @@ class KlarnaClientSideSession extends KlarnaSessionConfig {
       'sessionType': 'clientSide',
       'clientId': clientId,
       'locale': locale,
-      'amount': amount,
-      'currency': currency,
-      if (email != null) 'email': email,
-      if (phoneNumber != null) 'phoneNumber': phoneNumber,
-      if (shippingAddress != null) 'shippingAddress': shippingAddress,
+      'sessionData': sessionData,
+      'region': region,
+      if (collectShippingAddress != null) 'collectShippingAddress': collectShippingAddress,
     };
   }
 }
@@ -65,7 +58,7 @@ class KlarnaExpressCheckoutConfig {
   final KlarnaSessionConfig sessionConfig;
   final KlarnaButtonConfig buttonConfig;
   final KlarnaEnvironment environment;
-  final String? returnUrl;  // iOS specific
+  final String? returnUrl; // iOS specific
 
   KlarnaExpressCheckoutConfig({
     required this.sessionConfig,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:klarna_express_checkout/klarna_express_checkout.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:klarna_express_checkout_example/session_data.dart';
 
 void main() {
   runApp(const MyApp());
@@ -69,49 +70,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   void _onAuthorized(AuthorizationResult result) async {
+    
     setState(() {
       _isLoading = true;
       _statusMessage = 'Processing authorization...';
     });
-
+    print('AuthorizationResult: ${result.toString()}');
     print('Authorization successful!');
     print('Token: ${result.authorizationToken}');
     print('Session ID: ${result.sessionId}');
 
-    // Send the authorization token to your backend to create the order
-    try {
-      final response = await http.post(
-        Uri.parse('$backendUrl/create-order'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'authorization_token': result.authorizationToken,
-          'session_id': result.sessionId,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final orderId = data['order_id'];
-        final redirectUrl = data['redirect_url'];
-
-        setState(() {
-          _isLoading = false;
-          _statusMessage = 'Order created successfully! Order ID: $orderId';
-        });
-
-        // Show success dialog
-        _showSuccessDialog(orderId);
-      } else {
-        throw Exception('Failed to create order');
-      }
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _statusMessage = 'Error: $e';
-      });
-
-      _showErrorDialog('Failed to create order: $e');
-    }
   }
 
   void _onError(KlarnaError error) {
@@ -126,21 +94,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     }
   }
 
-  void _showSuccessDialog(String orderId) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Order Created'),
-        content: Text('Your order has been created successfully!\n\nOrder ID: $orderId'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   void _showErrorDialog(String message) {
     showDialog(
@@ -220,8 +174,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   sessionConfig: KlarnaClientSideSession(
                     clientId: clientId,
                     locale: 'en-US',
-                    amount: 50.00,
-                    currency: 'USD',
+                    sessionData: jsonEncode(sessionData),
+                    region: 'north_america'
                   ),
                   buttonConfig: const KlarnaButtonConfig(
                     theme: KlarnaTheme.dark,
@@ -229,68 +183,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     style: KlarnaButtonStyle.filled,
                   ),
                   environment: KlarnaEnvironment.sandbox,
-                  returnUrl: 'myapp://klarna/return', // iOS only
+                  returnUrl: 'com.unice.longqihair://', // iOS only
                 ),
                 onAuthorized: _onAuthorized,
                 onError: _onError,
               ),
             ),
-
-            const SizedBox(height: 24),
-
-            // Server-side session example (commented out)
-            const Text(
-              'Server-side Session Example:',
-              style: TextStyle(fontWeight: FontWeight.bold,color: Colors.red),
-            ),
-            const Text(
-              '(Uncomment the code below and provide a backend)',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-            const SizedBox(height: 8),
-
-            /*
-            FutureBuilder<String?>(
-              future: _getClientToken(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const SizedBox(
-                    height: 50,
-                    child: Center(child: CircularProgressIndicator()),
-                  );
-                }
-
-                if (!snapshot.hasData || snapshot.data == null) {
-                  return const SizedBox(
-                    height: 50,
-                    child: Center(
-                      child: Text('Failed to load client token'),
-                    ),
-                  );
-                }
-
-                return SizedBox(
-                  height: 50,
-                  child: KlarnaExpressCheckoutButton(
-                    config: KlarnaExpressCheckoutConfig(
-                      sessionConfig: KlarnaServerSideSession(
-                        clientToken: snapshot.data!,
-                        locale: 'en-US',
-                      ),
-                      buttonConfig: const KlarnaButtonConfig(
-                        theme: KlarnaTheme.light,
-                        shape: KlarnaButtonShape.pill,
-                        style: KlarnaButtonStyle.outlined,
-                      ),
-                      environment: KlarnaEnvironment.sandbox,
-                    ),
-                    onAuthorized: _onAuthorized,
-                    onError: _onError,
-                  ),
-                );
-              },
-            ),
-            */
 
             const SizedBox(height: 24),
 
