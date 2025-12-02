@@ -35,7 +35,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   // Example configuration - replace with your actual values
   static const String clientId = 'klarna_test_client_dk4tcW85NzAlcHhER3MxVXhnNGxaQkR0WVMtdzFIdEwsMjI2ZDJhZGEtMzU3ZC00OWE0LWI2NGItODJmN2FmMDEyMGNlLDEsYmdrYUVpYWgrU014a2pBMlVsaFdvWTEzZExHRTRCSXA0THVDVVY5YlM5QT0';
-  static const String backendUrl = 'com.unice.longqihair://klarnaLogin';
+  static const String backendUrl = 'com.unice.longqihair://';
 
   // Example 1: Client-side session
   void _handleClientSideCheckout() {
