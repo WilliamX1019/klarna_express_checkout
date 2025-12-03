@@ -53,29 +53,37 @@ class ShippingAddress {
 
 /// Authorization result returned after successful authorization
 class AuthorizationResult {
-  final String authorizationToken;
-  final String sessionId;
+  final String? authorizationToken;
+  final String? clientToken;
+  final String? sessionId;
   final ShippingAddress? shippingAddress;
-  final bool approved;
-  final String? finalizedAt;
+  final bool? approved;
+  final bool? finalizedRequired;
 
   AuthorizationResult({
-    required this.authorizationToken,
-    required this.sessionId,
+    this.authorizationToken,
+    this.clientToken,
+    this.sessionId,
     this.shippingAddress,
-    required this.approved,
-    this.finalizedAt,
+    this.approved,
+    this.finalizedRequired,
   });
 
   factory AuthorizationResult.fromMap(Map<dynamic, dynamic> map) {
     return AuthorizationResult(
-      authorizationToken: map['authorizationToken'] as String,
-      sessionId: map['sessionId'] as String,
+      authorizationToken: map['authorizationToken'] as String? ?? '',
+      clientToken: map['clientToken'] as String? ?? '',  
+      sessionId: map['sessionId'] as String? ?? '',
       shippingAddress: map['shippingAddress'] != null
           ? ShippingAddress.fromMap(map['shippingAddress'] as Map)
           : null,
-      approved: map['approved'] as bool? ?? true,
-      finalizedAt: map['finalizedAt'] as String?,
+      approved: map['approved'] as bool? ?? false,
+      finalizedRequired: map['finalizedRequired'] as bool? ?? false,
     );
+  }
+
+  @override
+  String toString() {
+    return 'AuthorizationResult(authorizationToken: $authorizationToken, sessionId: $sessionId, shippingAddress: $shippingAddress, approved: $approved, finalizedRequired: $finalizedRequired)';
   }
 }

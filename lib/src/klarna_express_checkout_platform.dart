@@ -19,67 +19,67 @@ class KlarnaExpressCheckoutPlatform {
   }
 
   /// Initialize the Klarna SDK with configuration
-  Future<void> initialize(Map<String, dynamic> config) async {
-    try {
-      await _channel.invokeMethod('initialize', config);
-    } on PlatformException catch (e) {
-      throw KlarnaError(
-        code: KlarnaErrorCode.invalidConfiguration,
-        message: e.message ?? 'Failed to initialize',
-        debugMessage: e.details?.toString(),
-      );
-    }
-  }
+  // Future<void> initialize(Map<String, dynamic> config) async {
+  //   try {
+  //     await _channel.invokeMethod('initialize', config);
+  //   } on PlatformException catch (e) {
+  //     throw KlarnaError(
+  //       code: KlarnaErrorCode.invalidConfiguration,
+  //       message: e.message ?? 'Failed to initialize',
+  //       debugMessage: e.details?.toString(),
+  //     );
+  //   }
+  // }
 
   /// Load the Express Checkout button
-  Future<void> loadButton(Map<String, dynamic> config) async {
-    try {
-      await _channel.invokeMethod('loadButton', config);
-    } on PlatformException catch (e) {
-      throw KlarnaError(
-        code: KlarnaErrorCode.invalidConfiguration,
-        message: e.message ?? 'Failed to load button',
-        debugMessage: e.details?.toString(),
-      );
-    }
-  }
+  // Future<void> loadButton(Map<String, dynamic> config) async {
+  //   try {
+  //     await _channel.invokeMethod('loadButton', config);
+  //   } on PlatformException catch (e) {
+  //     throw KlarnaError(
+  //       code: KlarnaErrorCode.invalidConfiguration,
+  //       message: e.message ?? 'Failed to load button',
+  //       debugMessage: e.details?.toString(),
+  //     );
+  //   }
+  // }
 
   /// Update session data (for client-side sessions)
-  Future<void> updateSession(Map<String, dynamic> sessionData) async {
-    try {
-      await _channel.invokeMethod('updateSession', sessionData);
-    } on PlatformException catch (e) {
-      throw KlarnaError(
-        code: KlarnaErrorCode.invalidConfiguration,
-        message: e.message ?? 'Failed to update session',
-        debugMessage: e.details?.toString(),
-      );
-    }
-  }
+  // Future<void> updateSession(Map<String, dynamic> sessionData) async {
+  //   try {
+  //     await _channel.invokeMethod('updateSession', sessionData);
+  //   } on PlatformException catch (e) {
+  //     throw KlarnaError(
+  //       code: KlarnaErrorCode.invalidConfiguration,
+  //       message: e.message ?? 'Failed to update session',
+  //       debugMessage: e.details?.toString(),
+  //     );
+  //   }
+  // }
 
   /// Finalize the session manually (when autoFinalize is false)
-  Future<void> finalizeSession() async {
-    try {
-      await _channel.invokeMethod('finalizeSession');
-    } on PlatformException catch (e) {
-      throw KlarnaError(
-        code: KlarnaErrorCode.authorizationFailed,
-        message: e.message ?? 'Failed to finalize session',
-        debugMessage: e.details?.toString(),
-      );
-    }
-  }
+  // Future<void> finalizeSession() async {
+  //   try {
+  //     await _channel.invokeMethod('finalizeSession');
+  //   } on PlatformException catch (e) {
+  //     throw KlarnaError(
+  //       code: KlarnaErrorCode.authorizationFailed,
+  //       message: e.message ?? 'Failed to finalize session',
+  //       debugMessage: e.details?.toString(),
+  //     );
+  //   }
+  // }
 
   /// Enable logging for debugging
-  Future<void> setLoggingLevel(String level) async {
-    try {
-      await _channel.invokeMethod('setLoggingLevel', {'level': level});
-    } on PlatformException catch (e) {
-      throw KlarnaError(
-        code: KlarnaErrorCode.unknown,
-        message: e.message ?? 'Failed to set logging level',
-        debugMessage: e.details?.toString(),
-      );
-    }
-  }
+  // Future<void> setLoggingLevel(String level) async {
+  //   try {
+  //     await _channel.invokeMethod('setLoggingLevel', {'level': level});
+  //   } on PlatformException catch (e) {
+  //     throw KlarnaError(
+  //       code: KlarnaErrorCode.unknown,
+  //       message: e.message ?? 'Failed to set logging level',
+  //       debugMessage: e.details?.toString(),
+  //     );
+  //   }
+  // }
 }

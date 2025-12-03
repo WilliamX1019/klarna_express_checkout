@@ -51,8 +51,8 @@ class _KlarnaExpressCheckoutButtonState
 
   Future<void> _initializeButton() async {
     try {
-      await _platform.initialize(widget.config.toMap());
-      await _platform.loadButton(widget.config.toMap());
+      // await _platform.initialize(widget.config.toMap());
+      // await _platform.loadButton(widget.config.toMap());
       setState(() {
         _isInitialized = true;
       });

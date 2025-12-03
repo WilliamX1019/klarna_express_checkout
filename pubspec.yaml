@@ -1,6 +1,6 @@
 name: klarna_express_checkout
 description: A Flutter plugin for integrating Klarna Express Checkout on iOS and Android
-version: 0.1.0
+version: 1.0.0
 homepage: https://github.com/yourusername/klarna_express_checkout
 
 environment:

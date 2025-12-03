@@ -272,20 +272,33 @@ extension KlarnaExpressCheckoutButtonView: KlarnaExpressCheckoutButtonDelegate {
         view: KlarnaMobileSDK.KlarnaExpressCheckoutButton,
         response: KlarnaMobileSDK.KlarnaExpressCheckoutButtonAuthorizationResponse
     ) {
+        print("[KlarnaExpressCheckoutButtonView] onAuthorized called. Approved: \(response.approved)")
+
         var data: [String: Any] = [
             "approved": response.approved,
-            "sessionId": ""  // Session ID not directly exposed in response
+            "sessionId": response.sessionId,  // Session ID not directly exposed in response
         ]
 
         if let token = response.authorizationToken {
             data["authorizationToken"] = token
         }
+        if let clientToken = response.clientToken {
+            data["clientToken"] = clientToken
+        }
+
+        data["finalizedRequired"] = response.finalizedRequired
 
         // Add shipping address if available - collectedShippingAddress is a String, not an object
         if let shippingAddressString = response.collectedShippingAddress,
            let shippingAddressData = shippingAddressString.data(using: .utf8),
            let shippingAddress = try? JSONSerialization.jsonObject(with: shippingAddressData) as? [String: Any] {
             data["shippingAddress"] = shippingAddress
+        }
+
+        if plugin == nil {
+            print("[KlarnaExpressCheckoutButtonView] Error: plugin is nil")
+        } else {
+            print("[KlarnaExpressCheckoutButtonView] Calling plugin.sendEvent")
         }
 
         plugin?.sendEvent(type: "authorized", data: data)
@@ -368,25 +381,5 @@ extension KlarnaExpressCheckoutButtonView: KlarnaExpressCheckoutButtonDelegate {
         }
 
         return "unknown"
-    }
-
-    // MARK: - Public Methods for Plugin
-
-    func updateSession(clientToken: String) {
-        // Note: KlarnaExpressCheckoutButton doesn't support updating session after creation
-        // You would need to recreate the button with new options
-        sendError(message: "Session update not supported for Express Checkout button. Please recreate the button.", isFatal: false)
-    }
-
-    func finalizeSession() {
-        // Express Checkout button handles finalization automatically via autoFinalize option
-        // This method is kept for API compatibility
-        sendError(message: "Manual finalization not needed for Express Checkout with autoFinalize enabled", isFatal: false)
-    }
-
-    func setLoggingLevel(_ level: String) {
-        // Note: Logging level is set during button initialization
-        // It cannot be changed after the button is created
-        sendError(message: "Logging level can only be set during button initialization", isFatal: false)
     }
 }

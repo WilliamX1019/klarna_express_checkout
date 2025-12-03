@@ -35,7 +35,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
   String _statusMessage = '';
 
   // Example configuration - replace with your actual values
-  static const String clientId = 'klarna_test_client_dk4tcW85NzAlcHhER3MxVXhnNGxaQkR0WVMtdzFIdEwsMjI2ZDJhZGEtMzU3ZC00OWE0LWI2NGItODJmN2FmMDEyMGNlLDEsYmdrYUVpYWgrU014a2pBMlVsaFdvWTEzZExHRTRCSXA0THVDVVY5YlM5QT0';
+  static const String clientId =
+      'klarna_test_client_dk4tcW85NzAlcHhER3MxVXhnNGxaQkR0WVMtdzFIdEwsMjI2ZDJhZGEtMzU3ZC00OWE0LWI2NGItODJmN2FmMDEyMGNlLDEsYmdrYUVpYWgrU014a2pBMlVsaFdvWTEzZExHRTRCSXA0THVDVVY5YlM5QT0';
   static const String backendUrl = 'com.unice.longqihair://';
 
   // Example 1: Client-side session
@@ -70,15 +71,21 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   void _onAuthorized(AuthorizationResult result) async {
-    
-    setState(() {
-      _isLoading = true;
-      _statusMessage = 'Processing authorization...';
-    });
     print('AuthorizationResult: ${result.toString()}');
     print('Authorization successful!');
-    print('Token: ${result.authorizationToken}');
-    print('Session ID: ${result.sessionId}');
+
+    if(result.sessionId?.isNotEmpty == true) {
+      print('sessionId: ${result.sessionId}');
+    }
+    if (result.authorizationToken?.isNotEmpty == true) {
+      print('authorizationToken: ${result.authorizationToken}');
+    }
+    if(result.clientToken?.isNotEmpty == true) {
+      print('clientToken: ${result.clientToken}');
+    }
+    if (result.approved == true) {
+      print('approved: ${result.approved}');
+    }
 
   }
 
@@ -93,8 +100,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
       _showErrorDialog(error.message);
     }
   }
-
-
 
   void _showErrorDialog(String message) {
     showDialog(
@@ -172,14 +177,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 width: 60,
                 config: KlarnaExpressCheckoutConfig(
                   sessionConfig: KlarnaClientSideSession(
-                    clientId: clientId,
-                    locale: 'en-US',
-                    sessionData: jsonEncode(sessionData),
-                    region: 'north_america'
-                  ),
+                      clientId: clientId,
+                      locale: 'en-US',
+                      sessionData: jsonEncode(sessionData),
+                      region: 'north_america'),
                   buttonConfig: const KlarnaButtonConfig(
                     theme: KlarnaTheme.dark,
-                    shape: KlarnaButtonShape.roundedRect,
+                    shape: KlarnaButtonShape.pill,
                     style: KlarnaButtonStyle.filled,
                   ),
                   environment: KlarnaEnvironment.sandbox,
