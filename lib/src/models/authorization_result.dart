@@ -56,7 +56,7 @@ class AuthorizationResult {
   final String? authorizationToken;
   final String? clientToken;
   final String? sessionId;
-  final ShippingAddress? shippingAddress;
+  final String? shippingAddress;
   final bool? approved;
   final bool? finalizedRequired;
 
@@ -74,9 +74,7 @@ class AuthorizationResult {
       authorizationToken: map['authorizationToken'] as String? ?? '',
       clientToken: map['clientToken'] as String? ?? '',  
       sessionId: map['sessionId'] as String? ?? '',
-      shippingAddress: map['shippingAddress'] != null
-          ? ShippingAddress.fromMap(map['shippingAddress'] as Map)
-          : null,
+      shippingAddress: map['shippingAddress'] as String? ?? '',
       approved: map['approved'] as bool? ?? false,
       finalizedRequired: map['finalizedRequired'] as bool? ?? false,
     );

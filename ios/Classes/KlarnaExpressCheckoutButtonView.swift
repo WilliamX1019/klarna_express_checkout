@@ -288,12 +288,15 @@ extension KlarnaExpressCheckoutButtonView: KlarnaExpressCheckoutButtonDelegate {
 
         data["finalizedRequired"] = response.finalizedRequired
 
-        // Add shipping address if available - collectedShippingAddress is a String, not an object
-        if let shippingAddressString = response.collectedShippingAddress,
-           let shippingAddressData = shippingAddressString.data(using: .utf8),
-           let shippingAddress = try? JSONSerialization.jsonObject(with: shippingAddressData) as? [String: Any] {
+        if let shippingAddress = response.collectedShippingAddress {
             data["shippingAddress"] = shippingAddress
-        }
+        }    
+        // // Add shipping address if available - collectedShippingAddress is a String, not an object
+        // if let shippingAddressString = response.collectedShippingAddress,
+        //    let shippingAddressData = shippingAddressString.data(using: .utf8),
+        //    let shippingAddress = try? JSONSerialization.jsonObject(with: shippingAddressData) as? [String: Any] {
+        //     data["shippingAddress"] = shippingAddress
+        // }
 
         if plugin == nil {
             print("[KlarnaExpressCheckoutButtonView] Error: plugin is nil")

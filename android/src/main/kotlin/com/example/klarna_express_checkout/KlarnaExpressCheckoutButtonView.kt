@@ -68,7 +68,8 @@ class KlarnaExpressCheckoutButtonView(
             val themeString = config["theme"] as? String ?: "dark"
             val regionString = config["region"] as? String ?: "na"
             val loggingLevelString = config["loggingLevel"] as? String ?: "off"
-
+            val sessionData = config["sessionData"] as? String ?: ""
+            
             // Parse session options
             val sessionOptions: KlarnaExpressCheckoutSessionOptions = when (sessionType.lowercase()) {
                 "serverside" -> {
@@ -87,22 +88,6 @@ class KlarnaExpressCheckoutButtonView(
                     if (clientId.isNullOrBlank()) {
                         sendError("invalidConfiguration", "Missing client ID for client-side session", true)
                         return
-                    }
-
-                    // Build session data
-                    val sessionDataMap = mutableMapOf<String, Any>()
-                    (config["amount"] as? Double)?.let {
-                        sessionDataMap["purchase_amount"] = (it * 100).toInt()
-                    }
-                    (config["currency"] as? String)?.let {
-                        sessionDataMap["purchase_currency"] = it
-                    }
-
-                    // Convert to JSON string if needed
-                    val sessionData = if (sessionDataMap.isNotEmpty()) {
-                        org.json.JSONObject(sessionDataMap as Map<*, *>).toString()
-                    } else {
-                        ""
                     }
 
                     KlarnaExpressCheckoutSessionOptions.ClientSideSession(
@@ -218,6 +203,9 @@ class KlarnaExpressCheckoutButtonView(
         response.authorizationToken?.let {
             data["authorizationToken"] = it
         }
+        response.clientToken?.let {
+            data["clientToken"] = it
+        }
 
         response.collectedShippingAddress?.let {
             data["shippingAddress"] = it
@@ -268,21 +256,5 @@ class KlarnaExpressCheckoutButtonView(
         plugin.unregisterButtonView(viewId)
         containerView.removeAllViews()
         klarnaButton = null
-    }
-
-    // Public methods for plugin
-    fun updateSession(clientToken: String) {
-        // Note: KlarnaExpressCheckoutButton doesn't support updating session after creation
-        sendError("notSupported", "Session update not supported. Please recreate the button.", false)
-    }
-
-    fun finalizeSession() {
-        // Express Checkout button handles finalization automatically via autoFinalize option
-        sendError("notSupported", "Manual finalization not needed with autoFinalize enabled", false)
-    }
-
-    fun setLoggingLevel(level: String) {
-        // Note: Logging level is set during button initialization
-        sendError("notSupported", "Logging level can only be set during button initialization", false)
     }
 }
